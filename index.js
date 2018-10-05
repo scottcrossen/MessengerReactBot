@@ -53,10 +53,55 @@ const getElementID = (name) => {
     default: return '#👍'
   }
 }
+// Delay DOM events so they'll actually happen
 const delay = (value) => {
   return new Promise((resolve) => {
     setTimeout(resolve.bind(null, value), TIME_WAIT_FOR_DOM)
   })
+}
+
+// Create an observer instance linked to the callback function
+var locked = false
+const observerCallback = function(mutationsList, observer) {
+  if (!locked) {
+    lock = true
+    replyWithEmoji()
+    lock = false
+  }
+}
+// Decorate the observer to handle when our system fails.
+class TryObserver {
+  constructor(toWatch) {
+    this.pathToWatch = toWatch
+    this.running = false
+    this.underlying = new MutationObserver(observerCallback)
+  }
+  start() {
+    if(!this.running) {
+      try {
+        this.underlying.observe(
+          document.querySelector(this.pathToWatch),
+          {attributes: false, childList: true, subtree: false}
+        )
+        this.running = true
+      } catch (error) {
+        this.running = false
+      }
+    }
+  }
+  kill () {
+    this.underlying.disconnect()
+    this.running = false
+  }
+}
+// Observe if a new user sends a message
+var observer1 = new TryObserver(WATCH_ROOT)
+// Observe if the same user sends a message
+var observer2 = new TryObserver(LAST_MESSAGE_BUNDLE)
+// Start observers when ready
+const startObservers = () => {
+  observer1.start()
+  observer2.start()
 }
 const replyWithEmoji = () => {
   /* A person's name can be extracted from the profile link. Nicknames can be
@@ -80,23 +125,18 @@ const replyWithEmoji = () => {
   )).then(() => delay(
     // Get ID of emoji to click on and then click
     document.querySelector(getElementID(name)).dispatchEvent(CLICK_EVENT)
-  ))
+  )).catch((error) => {
+    console.log(error)
+    observer1.kill()
+    observer2.kill()
+  }).then(() => {
+    // It can happen that one observer won't restart so let's try every time.
+    startObservers()
+  })
 }
+
 // Only execute on messenger.com
 messengerUrlRegex.lastIndex = 0
 if(window.location.href.match(messengerUrlRegex)) {
-  // Watch this node for additional children
-  var locked = false
-  // Create an observer instance linked to the callback function
-  var observer = new MutationObserver(function(mutationsList, observer) {
-    if (!locked) {
-      lock = true
-      replyWithEmoji()
-      lock = false
-    }
-  })
-  // Observe if a new user sends a message
-  observer.observe(document.querySelector(WATCH_ROOT), {attributes: false, childList: true, subtree: false})
-  // Observe if the same user sends a message
-  observer.observe(document.querySelector(LAST_MESSAGE_BUNDLE), {attributes: false, childList: true, subtree: false})
+  startObservers()
 }
