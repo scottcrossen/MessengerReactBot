@@ -9,6 +9,7 @@
  */
 const WATCH_ROOT = 'body > div:nth-child(1) > div > div > div._1t2u > span:nth-child(2) > div._20bp > div._4_j4 > div._4u-c._1wfr._9hq > div._5f0v.uiScrollableArea.fade > div:nth-child(2) > div > div > div > div:nth-child(3)'
 const COMMON_ROOT = WATCH_ROOT + ' > div:last-child > div'
+const LAST_PERSON_IMAGE = COMMON_ROOT + ' > div._1t_q > div > div > div > img'
 const LAST_MESSAGE_BUNDLE = COMMON_ROOT + ' > div._41ud'
 const LAST_MESSAGE = LAST_MESSAGE_BUNDLE + ' > div:last-child'
 const LAST_PERSON_URL = COMMON_ROOT + ' > div._1t_q > a'
@@ -39,8 +40,8 @@ const CLICK_EVENT = new MouseEvent('click', {
   thumbs-up: #👍
   thumbs-down: #👎
 */
-const nameToEmoji = {
-  'scottcrossen42': 'heart'
+var nameToEmoji = {
+  'Scott Crossen': 'heart'
 }
 const getElementID = (name) => {
   switch(nameToEmoji[name]) {
@@ -114,13 +115,8 @@ const replyWithEmoji = () => {
     changed so we'll use the individual's chat link to extract the username.
     If we're in a private chat use the URL cause it's not listed in divs
   */
-  const personChatLocation = document.querySelector(LAST_PERSON_URL) || window.location
-  messengerUrlRegex.lastIndex = 0
-  const name = messengerUrlRegex.exec(personChatLocation.href)[1]
-  /*
-    Alternatively we could have used nicknames:
-    document.querySelector(LAST_PERSON_NICKNAME).getAttribute('aria-label')
-  */
+  const name = document.querySelector(LAST_PERSON_IMAGE).alt
+
   // These events need to be delayed so the DOM can respond.
   return Promise.resolve(
     // Hover over last message
