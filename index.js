@@ -40,7 +40,16 @@ const CLICK_EVENT = new MouseEvent('click', {
   thumbs-down: #👎
 */
 const nameToEmoji = {
-  'scottcrossen42': 'heart'
+  'foundmymojo': 'heart',
+  'scottcrossen42': 'heart',
+  'mark.crossen': 'heart',
+  'kcweaver23': 'laugh',
+  'mike.nguyen.376258': 'laugh',
+  'javi.sorribes.5': 'amazed',
+  'luchen.peng': 'tears',
+  'andreas.k.butler': 'tears',
+  'enkhtushig.namkhai': 'angry',
+  'shuying.zhang.9': 'thumbsdown'
 }
 const getElementID = (name) => {
   switch(nameToEmoji[name]) {
@@ -64,8 +73,8 @@ const replyWithEmoji = () => {
     If we're in a private chat use the URL cause it's not listed in divs
   */
   const personChatLocation = document.querySelector(LAST_PERSON_URL) || window.location
-  MESSENGER_URL_REGEX.lastIndex = 0
-  const name = MESSENGER_URL_REGEX.exec(personChatLocation.href)[1]
+  messengerUrlRegex.lastIndex = 0
+  const name = messengerUrlRegex.exec(personChatLocation.href)[1]
   /*
     Alternatively we could have used nicknames:
     document.querySelector(LAST_PERSON_NICKNAME).getAttribute('aria-label')
@@ -83,7 +92,8 @@ const replyWithEmoji = () => {
   ))
 }
 // Only execute on messenger.com
-if(window.location.href.match(MESSENGER_URL_REGEX)) {
+messengerUrlRegex.lastIndex = 0
+if(window.location.href.match(messengerUrlRegex)) {
   // Watch this node for additional children
   var locked = false
   // Create an observer instance linked to the callback function
