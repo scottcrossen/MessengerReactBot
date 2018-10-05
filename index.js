@@ -40,16 +40,7 @@ const CLICK_EVENT = new MouseEvent('click', {
   thumbs-down: #👎
 */
 const nameToEmoji = {
-  'foundmymojo': 'heart',
-  'scottcrossen42': 'heart',
-  'mark.crossen': 'heart',
-  'kcweaver23': 'laugh',
-  'mike.nguyen.376258': 'laugh',
-  'javi.sorribes.5': 'amazed',
-  'luchen.peng': 'tears',
-  'andreas.k.butler': 'tears',
-  'enkhtushig.namkhai': 'angry',
-  'shuying.zhang.9': 'thumbsdown'
+  'scottcrossen42': 'heart'
 }
 const getElementID = (name) => {
   switch(nameToEmoji[name]) {
