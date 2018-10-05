@@ -64,17 +64,17 @@ const delay = (value) => {
 var locked = false
 const observerCallback = function(mutationsList, observer) {
   if (!locked) {
-    lock = true
-    replyWithEmoji()
-    lock = false
+    return Promise.resolve(() => {lock = true}).then(() => replyWithEmoji()).then(() => {lock = false})
+  } else {
+    return Promise.resolve()
   }
 }
 // Decorate the observer to handle when our system fails.
 class TryObserver {
-  constructor(toWatch) {
+  constructor(toWatch, callback) {
     this.pathToWatch = toWatch
     this.running = false
-    this.underlying = new MutationObserver(observerCallback)
+    this.underlying = new MutationObserver(callback)
   }
   start() {
     if(!this.running) {
@@ -89,15 +89,21 @@ class TryObserver {
       }
     }
   }
-  kill () {
+  kill() {
     this.underlying.disconnect()
     this.running = false
   }
+  reset() {
+    this.kill()
+    this.start()
+  }
 }
-// Observe if a new user sends a message
-var observer1 = new TryObserver(WATCH_ROOT)
 // Observe if the same user sends a message
-var observer2 = new TryObserver(LAST_MESSAGE_BUNDLE)
+var observer2 = new TryObserver(LAST_MESSAGE_BUNDLE, observerCallback)
+// Observe if a new user sends a message
+var observer1 = new TryObserver(WATCH_ROOT, function(mutationsList, observer) {
+  observerCallback().then(() => observer2.reset())
+})
 // Start observers when ready
 const startObservers = () => {
   observer1.start()
@@ -116,10 +122,10 @@ const replyWithEmoji = () => {
     document.querySelector(LAST_PERSON_NICKNAME).getAttribute('aria-label')
   */
   // These events need to be delayed so the DOM can respond.
-  new Promise((resolve) => resolve(
+  return Promise.resolve(
     // Hover over last message
     document.querySelector(LAST_MESSAGE).dispatchEvent(HOVER_EVENT)
-  )).then(() => delay(
+  ).then(() => delay(
     // Click on emoji button
     document.querySelector(EMOJI_BUTTON).dispatchEvent(CLICK_EVENT)
   )).then(() => delay(
